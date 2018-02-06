@@ -297,4 +297,22 @@ test_F$Loan_Status <- preds
 test_F$Loan_Status_bin <- ifelse(test_F$Loan_Status >= 0.5 , 'Y', 'N')
 sub_xgb <- data.frame(Loan_ID = test_F$Loan_ID, Loan_Status =  test_F$Loan_Status_bin)
 write.csv(sub_xgb, file = "sub_xgb.csv", row.names = F)
+##----------------------------------------------------------------------------
+## ensemble rf, nn, glm
+##----------------------------------------------------------------------------
+preds_rf = predict(model_rf, test_F)
+preds_nn = predict(model_NN, test_F)
+preds_glm = predict(model, test_F)
+preds_glm<- ifelse(preds_glm >= 0.5 , '1', '0')
+preds_nn<- ifelse(preds_nn == 'Y' , '1', '0')
+preds_rf<- ifelse(preds_rf == 'Y' , '1', '0')
 
+test_F$preds_glm <- preds_glm
+test_F$preds_rf <- preds_rf
+test_F$preds_nn <- preds_nn
+
+test_F$pred_sum <- as.numeric(preds_glm)+ as.numeric(preds_rf)+ as.numeric(preds_nn)
+test_F$pred_final <- ifelse(test_F$pred_sum >=2  , 'Y', 'N')  
+
+sub_ensm <- data.frame(Loan_ID = test_F$Loan_ID, Loan_Status =  test_F$pred_final)
+write.csv(sub_ensm, file = "sub_ensm.csv", row.names = F)
